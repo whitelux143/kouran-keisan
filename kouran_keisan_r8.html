@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>令和8年分 給与甲欄機械計算</title>
+<style>
+  :root{
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --line:#d8dee6;
+    --text:#1b2733;
+    --sub:#5b6b7c;
+    --accent:#1c6b4a;
+    --accent-weak:#e8f3ee;
+    --warn:#a3341f;
+    --warn-bg:#fdeeea;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    padding:16px 14px 48px;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+  h1{
+    font-size:1.25rem;
+    margin:0 0 8px;
+    letter-spacing:.02em;
+  }
+  .note{
+    font-size:.8rem;
+    color:var(--sub);
+    background:#eef1f4;
+    border-left:3px solid var(--line);
+    padding:8px 10px;
+    margin:0 0 16px;
+    border-radius:0 6px 6px 0;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 14px;
+    margin-bottom:14px;
+  }
+  .field{margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  label{
+    display:block;
+    font-size:.85rem;
+    font-weight:600;
+    margin-bottom:5px;
+  }
+  .hint{
+    display:block;
+    font-weight:400;
+    font-size:.74rem;
+    color:var(--sub);
+    margin-top:2px;
+    line-height:1.45;
+  }
+  .inputline{position:relative;display:flex;align-items:center;}
+  input[type="text"],select{
+    width:100%;
+    padding:11px 12px;
+    font-size:1.05rem;
+    font-family:inherit;
+    color:var(--text);
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:8px;
+    appearance:none;
+  }
+  input[type="text"].money{
+    text-align:right;
+    padding-right:34px;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.02em;
+  }
+  input[type="text"].count{
+    text-align:right;
+    padding-right:34px;
+  }
+  .unit{
+    position:absolute;
+    right:12px;
+    font-size:.85rem;
+    color:var(--sub);
+    pointer-events:none;
+  }
+  input:focus,select:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(28,107,74,.14);
+  }
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--sub) 50%),linear-gradient(135deg,var(--sub) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:36px;}
+  .btns{display:flex;gap:10px;margin-top:18px;}
+  button{
+    font-family:inherit;
+    font-size:1rem;
+    font-weight:700;
+    border-radius:8px;
+    padding:13px 10px;
+    cursor:pointer;
+    border:1px solid transparent;
+  }
+  .primary{flex:2;background:var(--accent);color:#fff;}
+  .primary:active{background:#155539;}
+  .ghost{flex:1;background:#fff;color:var(--sub);border-color:var(--line);}
+  .ghost:active{background:#eef1f4;}
+  .alert{
+    background:var(--warn-bg);
+    border:1px solid #f0c4ba;
+    color:var(--warn);
+    font-size:.86rem;
+    padding:10px 12px;
+    border-radius:8px;
+    margin-bottom:14px;
+  }
+  .result{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .result-head{
+    background:var(--accent-weak);
+    padding:16px 14px 18px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+  .result-label{font-size:.85rem;color:var(--accent);font-weight:700;letter-spacing:.06em;}
+  .result-value{
+    font-size:2.6rem;
+    font-weight:800;
+    color:var(--accent);
+    line-height:1.15;
+    margin-top:4px;
+    font-variant-numeric:tabular-nums;
+    word-break:break-all;
+  }
+  .result-value .yen{font-size:1.1rem;margin-left:4px;font-weight:700;}
+  details{border-top:0;}
+  summary{
+    padding:13px 14px;
+    font-size:.9rem;
+    font-weight:600;
+    cursor:pointer;
+    color:var(--sub);
+    list-style:none;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:"▶";font-size:.7rem;transition:transform .15s;}
+  details[open] summary::before{transform:rotate(90deg);}
+  .steps{padding:0 14px 16px;}
+  .row{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    padding:8px 0;
+    border-bottom:1px dotted #e2e7ec;
+    font-size:.92rem;
+  }
+  .row:last-child{border-bottom:none;}
+  .op{width:1.2em;flex:none;color:var(--sub);font-weight:700;text-align:center;}
+  .nm{flex:1;color:var(--sub);}
+  .vl{
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .row.total .nm,.row.total .vl{color:var(--text);font-weight:700;}
+  .row.total{background:#f7f9fa;margin:0 -14px;padding-left:14px;padding-right:14px;}
+  .row.final .vl{color:var(--accent);font-size:1.05rem;}
+  .row.memo{font-size:.8rem;color:var(--sub);justify-content:flex-end;}
+  .row.memo .vl{font-weight:400;color:var(--sub);}
+  @media (min-width:600px){
+    body{padding:28px 20px 60px;}
+    h1{font-size:1.5rem;}
+    .card,.steps{padding-left:20px;padding-right:20px;}
+    .row.total{margin:0 -20px;padding-left:20px;padding-right:20px;}
+    .result-value{font-size:3rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>令和8年分 給与甲欄機械計算</h1>
+  <p class="note">令和8年分の月額表甲欄を適用する給与等の電算機計算用です。賞与の通常計算、乙欄、日額表には対応していません。</p>
+
+  <form id="form" class="card" novalidate>
+    <div class="field">
+      <label for="pay">支給額（月額）</label>
+      <div class="inputline">
+        <input type="text" id="pay" class="money" inputmode="numeric" autocomplete="off" placeholder="0">
+        <span class="unit">円</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="ins">社会保険料等
+        <span class="hint">健康保険料・厚生年金保険料・介護保険料・雇用保険料などの本人負担額の合計</span>
+      </label>
+      <div class="inputline">
+        <input type="text" id="ins" class="money" inputmode="numeric" autocomplete="off" placeholder="0">
+        <span class="unit">円</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="spouse">源泉控除対象配偶者</label>
+      <select id="spouse">
+        <option value="0">なし</option>
+        <option value="1">あり</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="dep">源泉控除対象親族の人数</label>
+      <div class="inputline">
+        <input type="text" id="dep" class="count" inputmode="numeric" autocomplete="off" placeholder="0">
+        <span class="unit">人</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="add">加算人数
+        <span class="hint">本人・家族の障害者、寡婦、ひとり親、勤労学生など、源泉計算上1人として加算する人数</span>
+      </label>
+      <div class="inputline">
+        <input type="text" id="add" class="count" inputmode="numeric" autocomplete="off" placeholder="0">
+        <span class="unit">人</span>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button type="submit" class="primary">所得税を計算</button>
+      <button type="button" class="ghost" id="clear">クリア</button>
+    </div>
+  </form>
+
+  <div id="alert" class="alert" hidden></div>
+
+  <div id="result" class="result" hidden>
+    <div class="result-head">
+      <div class="result-label">所得税（源泉徴収税額）</div>
+      <div class="result-value"><span id="taxMain">0</span><span class="yen">円</span></div>
+    </div>
+    <details id="detail">
+      <summary>計算過程を表示</summary>
+      <div class="steps" id="steps"></div>
+    </details>
+  </div>
+</div>
+
+<script>
+// ===CALC-START===
+// 給与所得控除（1円未満切上げ）
+function salaryDeduction(A){
+  if(A <= 158333) return 54167;
+  if(A <= 299999) return Math.ceil(A * 30 / 100) + 6667;
+  if(A <= 549999) return Math.ceil(A * 20 / 100) + 36667;
+  if(A <= 708330) return Math.ceil(A * 10 / 100) + 91667;
+  return 162500;
+}
+// 基礎控除（判定はA＝社会保険料等控除後の給与額）
+function basicDeduction(A){
+  if(A <= 2120833) return 48334;
+  if(A <= 2162499) return 40000;
+  if(A <= 2204166) return 26667;
+  if(A <= 2245833) return 13334;
+  return 0;
+}
+// 給与甲欄所得税率（rateは％を1000倍した整数＝5.105% → 5105）
+function taxBracket(B){
+  if(B <= 162500)   return {rate:5105,  ded:0};
+  if(B <= 275000)   return {rate:10210, ded:8296};
+  if(B <= 579166)   return {rate:20420, ded:36374};
+  if(B <= 750000)   return {rate:23483, ded:54113};
+  if(B <= 1500000)  return {rate:33693, ded:130688};
+  if(B <= 3333333)  return {rate:40840, ded:237893};
+  return {rate:45945, ded:408061};
+}
+// 本体：すべて整数演算で行い、浮動小数点誤差を避ける
+function calcTax(input){
+  var pay    = input.pay|0;
+  var ins    = input.ins|0;
+  var spouse = input.spouse ? 1 : 0;
+  var dep    = input.dep|0;
+  var add    = input.add|0;
+
+  var A = pay - ins;
+  if(A < 0) A = 0;
+
+  var sd  = salaryDeduction(A);
+  var sp  = spouse ? 31667 : 0;
+  var dp  = 31667 * (dep + add);
+  var bd  = basicDeduction(A);
+
+  var B = A - sd - sp - dp - bd;
+  if(B < 0) B = 0;
+
+  var br = taxBracket(B);
+  // 税額を 1/100000 円単位の整数で保持（rate は 1/100000 単位の率）
+  var scaled = B * br.rate - br.ded * 100000;
+  if(scaled < 0) scaled = 0;
+
+  // 10円未満四捨五入：1円＝100000 → 10円＝1000000
+  var tax = Math.round(scaled / 1000000) * 10;
+
+  return {
+    pay:pay, ins:ins, A:A,
+    salaryDed:sd, spouseDed:sp, depDed:dp, basicDed:bd,
+    B:B, rate:br.rate, rateDed:br.ded,
+    rawScaled:scaled, raw:scaled / 100000,
+    tax:tax
+  };
+}
+// ===CALC-END===
+
+// ---------- 表示用フォーマッタ ----------
+function fmt(n){
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+// 1/100000円単位の整数を「193,975.05256」形式に
+function fmtScaled(scaled){
+  var yen = Math.floor(scaled / 100000);
+  var frac = String(scaled % 100000).padStart(5, "0").replace(/0+$/, "");
+  return fmt(yen) + (frac ? "." + frac : "");
+}
+function fmtRate(rate){
+  return (rate / 1000).toFixed(3);
+}
+
+// ---------- 入力制御 ----------
+var payEl = document.getElementById("pay");
+var insEl = document.getElementById("ins");
+var depEl = document.getElementById("dep");
+var addEl = document.getElementById("add");
+var spouseEl = document.getElementById("spouse");
+var alertEl = document.getElementById("alert");
+var resultEl = document.getElementById("result");
+var stepsEl = document.getElementById("steps");
+var taxMainEl = document.getElementById("taxMain");
+var detailEl = document.getElementById("detail");
+
+function digitsOnly(s){
+  return (s || "").replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+                  .replace(/[^0-9]/g, "");  // マイナス記号・記号類はすべて除去＝マイナス入力不可
+}
+function valueOf(el){
+  var d = digitsOnly(el.value);
+  return d === "" ? null : parseInt(d, 10);
+}
+[payEl, insEl, depEl, addEl].forEach(function(el){
+  el.addEventListener("input", function(){
+    var d = digitsOnly(el.value);
+    if(d !== ""){
+      d = String(parseInt(d, 10));               // 先頭ゼロを除去
+      el.value = el.classList.contains("money") ? fmt(d) : d;
+    }else{
+      el.value = "";
+    }
+    hide();
+  });
+  el.addEventListener("keydown", function(e){
+    if(e.key === "-" || e.key === "+" || e.key === "e") e.preventDefault();
+  });
+});
+spouseEl.addEventListener("change", hide);
+
+function hide(){
+  resultEl.hidden = true;
+  alertEl.hidden = true;
+}
+function warn(msg){
+  alertEl.textContent = msg;
+  alertEl.hidden = false;
+  resultEl.hidden = true;
+}
+
+// ---------- 計算実行 ----------
+document.getElementById("form").addEventListener("submit", function(e){
+  e.preventDefault();
+  var pay = valueOf(payEl);
+  var ins = valueOf(insEl) || 0;
+  var dep = valueOf(depEl) || 0;
+  var add = valueOf(addEl) || 0;
+
+  if(pay === null){
+    warn("支給額を入力してください。");
+    payEl.focus();
+    return;
+  }
+  if(ins > pay){
+    warn("社会保険料等（" + fmt(ins) + "円）が支給額（" + fmt(pay) + "円）を超えています。入力内容をご確認ください。");
+    return;
+  }
+  alertEl.hidden = true;
+
+  var r = calcTax({pay:pay, ins:ins, spouse:spouseEl.value === "1", dep:dep, add:add});
+  render(r);
+});
+
+function row(op, name, value, cls){
+  return '<div class="row ' + (cls || '') + '">' +
+           '<span class="op">' + op + '</span>' +
+           '<span class="nm">' + name + '</span>' +
+           '<span class="vl">' + value + '</span>' +
+         '</div>';
+}
+
+function render(r){
+  taxMainEl.textContent = fmt(r.tax);
+  var h = "";
+  h += row("", "支給額", fmt(r.pay) + " 円");
+  h += row("－", "社会保険料等", fmt(r.ins) + " 円");
+  h += row("＝", "社会保険料等控除後給与額A", fmt(r.A) + " 円", "total");
+  h += row("－", "給与所得控除", fmt(r.salaryDed) + " 円");
+  h += row("－", "配偶者控除等", fmt(r.spouseDed) + " 円");
+  h += row("－", "扶養控除等", fmt(r.depDed) + " 円");
+  h += row("－", "基礎控除", fmt(r.basicDed) + " 円");
+  h += row("＝", "課税給与所得金額B", fmt(r.B) + " 円", "total");
+  h += row("", "税率", fmtRate(r.rate) + " ％");
+  h += row("", "税率控除額", fmt(r.rateDed) + " 円");
+  h += row("", "計算前税額", fmtScaled(r.rawScaled) + " 円");
+  h += row("", "", "↓ 10円未満四捨五入", "memo");
+  h += row("", "所得税", fmt(r.tax) + " 円", "total final");
+  stepsEl.innerHTML = h;
+  resultEl.hidden = false;
+  resultEl.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+// ---------- クリア ----------
+document.getElementById("clear").addEventListener("click", function(){
+  payEl.value = ""; insEl.value = ""; depEl.value = ""; addEl.value = "";
+  spouseEl.value = "0";
+  detailEl.open = false;
+  hide();
+  payEl.focus();
+});
+</script>
+</body>
+</html>
